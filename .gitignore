@@ -1,0 +1,19 @@
+# Terraform secrets et fichiers d'état
+*.tfstate
+*.tfstate.*
+.terraform/
+terraform.tfvars
+terraform.tfvars.*
+override.tf
+override.tf.json
+
+# AWS CLI credentials (ne jamais commit)
+.aws/
+credentials
+config
+
+# Variables d'environnement sensibles
+.env
+.env.*
+*.pem
+*.key
