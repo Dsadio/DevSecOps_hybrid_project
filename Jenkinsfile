@@ -5,7 +5,7 @@
 
         stage('Checkout') {
             steps {
-                git 'https://github.com/Dsadio/devops-hybrid-project.git'
+                git 'https://github.com/Dsadio/DevSecOps_hybrid_project.git'
             }
         }
 
