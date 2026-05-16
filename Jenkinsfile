@@ -65,11 +65,11 @@ pipeline {
       }
     }
 
-    stage('Get EC2 Public IP') {
+    stage('Get EC2 Public IP (Terraform output)') {
       steps {
         script {
           env.AWS_IP = sh(
-            script: "cd terraform && terraform output -raw ec2_public_ip",
+            script: "cd terraform && terraform output -raw public_ip",
             returnStdout: true
           ).trim()
         }
