@@ -88,19 +88,17 @@ pipeline {
       }
     }
 
-    stage('Build Ansible Inventory') {
+    stage('Ansible Deploy (Build + Test + Apply)') {
       steps {
-        // ⚠️ CORRECTION IMPORTANTE : Utilisation des 2 clés SSH
         withCredentials([
           sshUserPrivateKey(credentialsId: 'ssh-key-aws', keyFileVariable: 'AWS_KEY_FILE'),
           sshUserPrivateKey(credentialsId: 'ssh-key-onprem', keyFileVariable: 'ONPREM_KEY_FILE')
         ]) {
           sh '''
-            # IMPORTANT : Permissions SSH obligatoires
+            # 1. Préparation de l'inventaire
             chmod 600 ${AWS_KEY_FILE}
             chmod 600 ${ONPREM_KEY_FILE}
             
-            # Création de l'inventaire avec les 2 clés
             cat > ansible/inventory/all.ini <<EOF
 [aws]
 ${AWS_IP} ansible_user=${AWS_USER} ansible_ssh_private_key_file=${AWS_KEY_FILE} ansible_ssh_common_args='-o StrictHostKeyChecking=accept-new'
@@ -112,32 +110,18 @@ ${ONPREM_IP} ansible_user=${ONPREM_USER} ansible_ssh_private_key_file=${ONPREM_K
 aws
 onprem
 EOF
-            
             echo "===== Inventory generated ====="
-            cat ansible/inventory/all.ini
+
+            # 2. Test de connectivité
+            cd ansible
+            ansible -i inventory/all.ini all -m ping
+
+            # 3. Déploiement réel
+            ansible-playbook -i inventory/all.ini playbook.yml
           '''
         }
       }
     }
-
-    stage('Ansible Connectivity Test') {
-      steps {
-        sh '''
-          cd ansible
-          ansible -i inventory/all.ini all -m ping
-        '''
-      }
-    }
-
-    stage('Ansible Deploy') {
-      steps {
-        sh '''
-          cd ansible
-          ansible-playbook -i inventory/all.ini playbook.yml
-        '''
-      }
-    }
-
     stage('Validation HTTP') {
       steps {
         sh '''
