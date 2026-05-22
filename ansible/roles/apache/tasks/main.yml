@@ -1,24 +1,48 @@
-
+---
 # tasks file for apache
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  become: yes
 
 - name: Install Apache
   apt:
     name: apache2
     state: present
-    update_cache: yes
+  become: yes
 
-- name: Start Apache
+- name: Start and enable Apache
   service:
     name: apache2
     state: started
     enabled: yes
+  become: yes
 
-- name: Copy website
+- name: Deploy custom index.html
   copy:
     src: index.html
     dest: /var/www/html/index.html
+    owner: www-data
+    group: www-data
+    mode: '0644'
+    backup: yes
+  become: yes
+  notify: Restart Apache
 
-- name: Restart Apache
-  service:
-    name: apache2
-    state: restarted
+- name: Ensure Apache is listening on port 80
+  lineinfile:
+    path: /etc/apache2/ports.conf
+    regexp: '^Listen '
+    line: 'Listen 80'
+  become: yes
+  notify: Restart Apache
+
+- name: Allow HTTP through firewall (if ufw is active)
+  ufw:
+    rule: allow
+    port: '80'
+    proto: tcp
+  become: yes
+  ignore_errors: yes
