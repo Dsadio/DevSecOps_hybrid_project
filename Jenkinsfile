@@ -55,7 +55,7 @@ pipeline {
       }
     }
 
-    stage('Terraform Apply') {
+       stage('Terraform Apply') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'aws-creds',
                           usernameVariable: 'AWS_ACCESS_KEY_ID',
@@ -63,7 +63,10 @@ pipeline {
           sh '''
             export AWS_DEFAULT_REGION="${AWS_REGION}"
             cd terraform
-            terraform apply -auto-approve -no-color
+            # Ajout des variables ici
+            terraform apply -auto-approve -no-color \
+              -var="key_name=devops-hybrid-key" \
+              -var="my_ip=0.0.0.0/0"
           '''
         }
       }
