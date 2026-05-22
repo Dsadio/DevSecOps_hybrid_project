@@ -1,7 +1,7 @@
 variable "region" {
   description = "Région AWS (ex: eu-west-1)"
   type        = string
-  default     = "eu-west-1"
+  default     = "eu-west-3"
 }
 
 variable "key_name" {
